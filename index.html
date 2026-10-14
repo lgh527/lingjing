@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>灵境光梭 - AI短剧无缝导演工作站</title>
+    <style>
+        :root {
+            --bg-black: #000000;
+            --bg-panel: #0A0E17;
+            --border-blue: #0284C7;
+            --accent-blue: #0EA5E9;
+            --text-main: #F0F9FF;
+            --text-sub: #7DD3FC;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-black); color: var(--text-main); font-family: system-ui, -apple-system, sans-serif; padding: 14px; }
+        
+        #authModal { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .auth-box { background: var(--bg-panel); border: 2px solid var(--border-blue); border-radius: 16px; padding: 24px; width: 100%; max-width: 340px; text-align: center; box-shadow: 0 0 30px rgba(2,132,199,0.4); }
+        .auth-box h2 { color: var(--accent-blue); font-size: 18px; margin-bottom: 8px; font-weight: 800; }
+        .auth-box p { font-size: 11px; color: var(--text-sub); margin-bottom: 16px; line-height: 1.5; }
+        .auth-input { width: 100%; background: #000; border: 1px solid var(--border-blue); color: #fff; padding: 12px; border-radius: 8px; font-size: 13px; text-align: center; margin-bottom: 14px; outline: none; }
+        .auth-btn { width: 100%; background: linear-gradient(135deg, #0284C7, #2563EB); color: #fff; border: none; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
+
+        #adminModal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; }
+
+        header { background: linear-gradient(135deg, #0A0E17 0%, #032342 100%); border: 1px solid var(--border-blue); padding: 16px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; box-shadow: 0 0 15px rgba(2, 132, 199, 0.3); }
+        .logo-area h1 { font-size: 17px; color: var(--accent-blue); font-weight: 800; }
+        .logo-area p { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+        .badge { background: rgba(14, 165, 233, 0.15); color: var(--accent-blue); border: 1px solid var(--border-blue); padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 600; cursor: pointer; }
+
+        section { background: var(--bg-panel); border: 1px solid #0369A1; border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+        label { font-size: 13px; color: var(--accent-blue); font-weight: 700; display: block; margin-bottom: 10px; }
+        
+        textarea { width: 100%; background: #000000; border: 1px solid #0284C7; color: var(--text-main); border-radius: 10px; padding: 12px; font-size: 13px; outline: none; resize: none; height: 120px; margin-bottom: 10px; }
+
+        .btn-primary { width: 100%; background: linear-gradient(135deg, #0284C7, #2563EB); color: white; border: none; border-radius: 10px; padding: 14px; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(2,132,199,0.4); }
+        .btn-reset { width: 100%; background: #1E293B; color: #94A3B8; border: 1px solid #475569; border-radius: 10px; padding: 12px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 8px; }
+
+        .upload-box { border: 2px dashed #0284C7; border-radius: 10px; padding: 20px; text-align: center; background: rgba(3, 35, 66, 0.3); position: relative; }
+        .upload-box input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        .box-text { font-size: 12px; color: var(--text-sub); margin-top: 6px; }
+
+        .episode-card { background: #000000; border: 1px solid #0284C7; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+        .episode-title { color: var(--accent-blue); font-weight: 700; font-size: 13px; margin-bottom: 8px; display: flex; justify-content: space-between; }
+        .scene-item { font-size: 11px; color: #BAE6FD; margin-bottom: 6px; background: rgba(2, 132, 199, 0.1); padding: 6px 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; }
+        .clip-tag { color: #38BDF8; font-family: monospace; background: rgba(56,189,248,0.15); padding: 2px 6px; border-radius: 4px; font-size: 10px; }
+
+        .result-box { background: rgba(2, 132, 199, 0.15); border: 1px solid var(--border-blue); border-radius: 14px; padding: 16px; margin-top: 14px; text-align: center; }
+        .hidden { display: none; }
+        a.download-link { display: inline-block; background: #0284C7; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-size: 12px; font-weight: 700; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div id="authModal">
+        <div class="auth-box">
+            <h2>🔐 灵境光梭 - 正版授权验证</h2>
+            <p>请将下方【本机设备特征码】发给卖家获取专属激活码。</p>
+            <div style="background:#000; border:1px dashed var(--border-blue); padding:8px; border-radius:6px; font-size:11px; color:#38BDF8; margin-bottom:12px; word-break:break-all;" id="displayDeviceId">正在获取本机特征码...</div>
+            <input type="text" id="authCodeInput" class="auth-input" placeholder="请输入您的专属激活码...">
+            <button class="auth-btn" onclick="verifyActivation()">立即激活软件</button>
+        </div>
+    </div>
+
+    <div id="adminModal">
+        <div class="auth-box" style="border-color: #F59E0B;">
+            <h2 style="color: #F59E0B;">🛠️ 站长网页算号后台</h2>
+            <p>输入管理密码和客户发来的特征码，实时生成专属激活码。</p>
+            <input type="password" id="adminPwd" class="auth-input" placeholder="请输入管理密码 (8888)">
+            <input type="text" id="customerDeviceId" class="auth-input" placeholder="粘贴客户的设备特征码...">
+            <button class="auth-btn" style="background: linear-gradient(135deg, #D97706, #B45309);" onclick="generateLicenseForCustomer()">立即生成专属激活码</button>
+            <div id="resultLicenseBox" style="margin-top: 10px; font-size: 12px; color: #34D399; word-break: break-all;"></div>
+            <button class="btn-reset" onclick="document.getElementById('adminModal').style.display='none'">关闭后台</button>
+        </div>
+    </div>
+
+    <header>
+        <div class="logo-area">
+            <h1>灵境光梭</h1>
+            <p>AI短剧无缝导演工作站</p>
+        </div>
+        <span class="badge" onclick="openAdminModal()">⚙️ 站长算号</span>
+    </header>
+
+    <section>
+        <label>📝 1. 粘贴完整剧情文本（每行代表一个镜头）</label>
+        <textarea id="scriptInput" placeholder="在此粘贴您的剧情文本... 系统将自动光速 1:1 对齐所有打乱的视频切片。"></textarea>
+        <button class="btn-primary" onclick="parseEpisodes()">⚡ 智能一键对齐剧本与所有切片</button>
+    </section>
+
+    <section>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <label style="margin:0;">📁 2. 批量导入打乱的【任意时长】视频切片</label>
+            <span id="clipCount" style="font-size:11px; color:var(--accent-blue);">已加载 0 个切片</span>
+        </div>
+        <div class="upload-box">
+            <input type="file" multiple accept="video/*" onchange="uploadFiles(this.files)">
+            <div style="font-size:24px; color:var(--accent-blue);">💠</div>
+            <div class="box-text">支持 5秒、10秒等任意长短的视频切片混排 (.mp4)</div>
+        </div>
+    </section>
+
+    <section>
+        <label>🎬 3. 光梭自适应剧本与切片对应预览</label>
+        <div id="episodesContainer" style="max-height: 240px; overflow-y: auto;">
+            <div style="text-align:center; color:#38BDF8; font-size:12px; padding: 25px;">等待输入剧本并加载切片...</div>
+        </div>
+    </section>
+
+    <button class="btn-primary" style="background: linear-gradient(135deg, #0369A1, #0284C7); padding: 16px; font-size: 15px;" onclick="batchStitch()">🚀 一键光速合成：输出剧情完美的【灵境大片】</button>
+    <button class="btn-reset" onclick="resetAllData()">🗑️ 一键清空重置系统</button>
+
+    <div id="resultContainer" class="result-box hidden">
+        <div style="font-size: 13px; color: #38BDF8; font-weight: 800; margin-bottom: 6px;">✔ 灵境大片已无缝合成完毕！</div>
+        <div id="downloadLinks"></div>
+    </div>
+
+    <script>
+        let myDeviceId = "";
+
+        window.onload = function() {
+            myDeviceId = localStorage.getItem('lingjing_device_id');
+            if (!myDeviceId) {
+                myDeviceId = 'LJ-DEV-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now().toString(36).toUpperCase();
+                localStorage.setItem('lingjing_device_id', myDeviceId);
+            }
+            document.getElementById('displayDeviceId').innerText = "本机特征码: " + myDeviceId;
+
+            if (localStorage.getItem('lingjing_activated') === 'true') {
+                document.getElementById('authModal').style.display = 'none';
+            }
+        }
+
+        async function verifyActivation() {
+            const code = document.getElementById('authCodeInput').value.trim();
+            if (!code) { alert('请输入激活码！'); return; }
+            const res = await fetch('/api/verify', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ code: code, deviceId: myDeviceId })
+            });
+            const data = await res.json();
+            if (data.success) {
+                localStorage.setItem('lingjing_activated', 'true');
+                document.getElementById('authModal').style.display = 'none';
+                alert(data.message);
+            } else {
+                alert(data.message);
+            }
+        }
+
+        function openAdminModal() {
+            document.getElementById('adminModal').style.display = 'flex';
+        }
+
+        async function generateLicenseForCustomer() {
+            const password = document.getElementById('adminPwd').value.trim();
+            const customerId = document.getElementById('customerDeviceId').value.trim();
+            if (!password || !customerId) { alert('请输入管理密码和客户特征码！'); return; }
+
+            const res = await fetch('/api/admin/keygen', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ password: password, deviceId: customerId })
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('resultLicenseBox').innerHTML = `✅ 专属激活码：<br><strong style="font-size:14px; color:#fff;">${data.license}</strong>`;
+            } else {
+                alert(data.message);
+            }
+        }
+
+        let episodesData = [];
+        let uploadedFilesList = [];
+
+        async function parseEpisodes() {
+            const script = document.getElementById('scriptInput').value.trim();
+            if (!script) { alert('请先输入剧情文本！'); return; }
+            const res = await fetch('/api/parse', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ script, clips: uploadedFilesList })
+            });
+            const data = await res.json();
+            if (data.success) { episodesData = data.episodes; renderEpisodes(); }
+        }
+
+        async function uploadFiles(files) {
+            for (let f of files) {
+                const fd = new FormData();
+                fd.append('file', f);
+                const res = await fetch('/api/upload', { method: 'POST', body: fd });
+                const data = await res.json();
+                if (data.success) { uploadedFilesList.push(data.filename); }
+            }
+            document.getElementById('clipCount').innerText = `已加载 ${uploadedFilesList.length} 个切片`;
+            if (document.getElementById('scriptInput').value.trim()) { parseEpisodes(); }
+        }
+
+        function renderEpisodes() {
+            const container = document.getElementById('episodesContainer');
+            if (episodesData.length === 0) { container.innerHTML = '<div style="text-align:center; color:#38BDF8; font-size:12px; padding: 25px;">等待输入剧本并加载切片...</div>'; return; }
+            let html = '';
+            episodesData.forEach(ep => {
+                html += `<div class="episode-card">
+                    <div class="episode-title"><span>🎬 ${ep.title}</span><span style="color:#7DD3FC; font-size:10px;">${ep.clips.length}个切片光速对齐</span></div>`;
+                ep.scenes.forEach((s, idx) => {
+                    html += `<div class="scene-item"><span>▪ ${s}</span><span class="clip-tag">🎞️ ${ep.clips[idx]}</span></div>`;
+                });
+                html += `</div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        async function batchStitch() {
+            if (episodesData.length === 0) { alert('请先生成对齐预览！'); return; }
+            const btn = document.querySelector('button[onclick="batchStitch()"]');
+            btn.innerText = 'FFmpeg 正在光速无缝合成大片...';
+            const res = await fetch('/api/stitch', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ episodes: episodesData })
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('resultContainer').classList.remove('hidden');
+                let links = '';
+                data.results.forEach(r => {
+                    links += `<div style="margin-bottom:10px;"><span style="font-size:13px; color:#F0F9FF; font-weight:700;">${r.name}</span><br><a class="download-link" href="${r.url}" download>点击下载完整成片 MP4</a></div>`;
+                });
+                document.getElementById('downloadLinks').innerHTML = links;
+                alert('灵境大片合成完毕！');
+            } else {
+                alert('合成出错: ' + data.error);
+            }
+            btn.innerText = '🚀 一键光速合成：输出剧情完美的【灵境大片】';
+        }
+
+        function resetAllData() {
+            if (confirm('确定要清空重置系统吗？')) {
+                document.getElementById('scriptInput').value = '';
+                uploadedFilesList = [];
+                episodesData = [];
+                document.getElementById('clipCount').innerText = '已加载 0 个切片';
+                document.getElementById('episodesContainer').innerHTML = '<div style="text-align:center; color:#38BDF8; font-size:12px; padding: 25px;">等待输入剧本并加载切片...</div>';
+                document.getElementById('resultContainer').classList.add('hidden');
+                document.getElementById('downloadLinks').innerHTML = '';
+            }
+        }
+    </script>
+</body>
+</html>
