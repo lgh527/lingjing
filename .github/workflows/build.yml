@@ -1,0 +1,42 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v3
+
+      - name: 设置 Python 环境
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: 安装打包工具及依赖
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
+          pip install --upgrade pip
+          pip install buildozer cython
+
+      - name: 初始化并定制 Buildozer 配置
+        run: |
+          echo y | buildozer init
+          sed -i 's/#source.main_ext = py/source.main_ext = py\nsource.file_exts = py,png,jpg,kv,atlas,html,txt/g' buildozer.spec
+          sed -i 's/source.main_filename = main.py/source.main_filename = server.py/g' buildozer.spec
+          sed -i 's/#requirements = python3,kivy/requirements = python3,kivy,flask/g' buildozer.spec
+          sed -i 's/#android.permissions = INTERNET/android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE/g' buildozer.spec
+
+      - name: 开始编译 APK
+        run: |
+          buildozer -v android debug
+
+      - name: 上传编译好的 APK 产物
+        uses: actions/upload-artifact@v3
+        with:
+          name: lingjing-apk
+          path: bin/*.apk
